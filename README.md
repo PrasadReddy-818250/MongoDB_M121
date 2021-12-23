@@ -207,3 +207,101 @@ db.movies.aggregate([
 ```
 
 Answer: 1596
+
+## Chapter 2
+
+Reference Link: [$addFields](https://docs.mongodb.com/manual/reference/operator/aggregation/addFields?jmp=university)
+
+```
+db.solarSystem.aggregate(
+  [
+    {
+      $project: {
+        _id: 0,
+        name: 1,
+        gravity: "gravity.value",
+        meanTemperature: 1,
+        density: 1,
+        mass: "$mass.value",
+        radius: "$radius.value",
+        sma: "$sma.value"
+      }
+    }
+  ]
+).pretty()
+```
+$add Fields
+```
+db.solarSystem.aggregate(
+  [
+    {
+      $addFields: {
+        gravity: "$gravity.value",
+        mass: "$mass.value",
+        radius: "$radius.value",
+        sma: "$sma.value"
+      }
+    }
+   ]
+)
+```
+
+By using $addFields, it does not remove any fields from the origional document, instead, append new transformation fields to the document.
+
+```
+db.solarSystem.aggregate(
+  [
+    {
+      $project: {
+        _id: 0,
+        name: 1,
+        gravity: 1,
+        mass: 1,
+        radius: 1,
+        sma: 1
+      }
+    }, {
+      $addFields: {
+        gravity: "$gravity.value",
+        mass: "$mass.value",
+        radius: "$radius.value",
+        sma: "$sma.value"
+      }
+    }
+  ]
+).pretty()
+```
+This is a style choice when performing many various calculations.
+
+**$geoNear**
+
+Reference Link: [$geoNear](https://docs.mongodb.com/manual/reference/operator/aggregation/geoNear?jmp=university)
+
+- $geoNear is the first stage in a pipeline.
+
+**cursor-like stages**
+```
+db.solarSystem.aggregate(
+  [
+    {
+      "$project": {
+        _id: 0,
+        name: 1,
+        numberOfMoons: 1
+      }
+    }, {
+      "$Limit": 5
+    }
+  ]
+)
+```
+- {$limit: Integer}
+- {$skip: Integer}
+- {$count: "field"}
+- {$sort: {field1 :-1, field2: 1}}
+- By default, $sort will only use up to 100 megabytes of RAM. Setting a allowDiskUse: true will allow for larger sorts.
+
+**$sample**
+
+Reference Link: [$sample](https://docs.mongodb.com/manual/reference/operator/aggregation/sample?jmp=university)
+
