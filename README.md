@@ -526,19 +526,77 @@ db.icecream_data.aggregate([
 
 ```
 db.movies.aggregate(
-	[
-		{
-			$match:{awards: /Won \d{1,2} Oscars?/}
-		},
-		{
-			"$group": {
-				_id:null,
-				"sd": {"$stdDevPop": "$imdb.rating"},
-				"highest": {"$max": "$imdb.rating"},
-				"lowest": {"$min": "$imdb.rating"},
-				"average":{"$avg": "$imdb.rating"}
-			}
+  [
+    {
+      $match:{awards: /Won \d{1,2} Oscars?/}
+    },
+    {
+      "$group": {
+		_id:null,
+		"sd": {"$stdDevPop": "$imdb.rating"},
+		"highest": {"$max": "$imdb.rating"},
+		"lowest": {"$min": "$imdb.rating"},
+		"average":{"$avg": "$imdb.rating"}
 		}
-	]
+    }
+  ]
 )
+```
+
+**$unwind**
+
+Reference Link: [$unwind](https://docs.mongodb.com/manual/reference/operator/aggregation/unwind/)
+
+```
+// finding the top rated genres per year from 2010 to 2015...
+db.movies.aggregate([
+  {
+    "$match": {
+      "imdb.rating": { "$gt": 0 },
+      "year": { "$gte": 2010, "$lte": 2015 },
+      "runtime": { "$gte": 90 }
+    }
+  },
+  {
+    "$unwind": "$genres"
+  },
+  {
+    "$group": {
+      "_id": {
+        "year": "$year",
+        "genre": "$genres"
+      },
+      "average_rating": { "$avg": "$imdb.rating" }
+    }
+  },
+  {
+    "$sort": { "_id.year": -1, "average_rating": -1 }
+  }
+])
+
+```
+
+**Lab - $unwind**
+
+```
+db.movies.aggregate([
+  {
+    "$match": {
+      "languages": { "$in": ["English"] }
+    }
+  },
+  {
+    "$unwind": "$cast"
+  },
+  {
+    "$group": {
+      "_id": "$cast",
+      "numFilms": {"$sum": 1},
+      "average": { "$avg": "$imdb.rating" }
+    }
+  },
+  {
+    "$sort": { "numFilms": -1}
+  }
+])
 ```
