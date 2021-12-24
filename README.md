@@ -600,3 +600,5 @@ db.movies.aggregate([
   }
 ])
 ```
+Answer:
+{ "_id" : "John Wayne", "numFilms" : 107, "average" : 6.424299065420561 }
