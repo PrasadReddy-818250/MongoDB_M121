@@ -602,3 +602,17 @@ db.movies.aggregate([
 ```
 Answer:
 { "_id" : "John Wayne", "numFilms" : 107, "average" : 6.424299065420561 }
+
+**$graphLookup: maxDepth and depthField**
+Problem:
+
+Which of the following statements are incorrect? Check all that apply
+Attempts Remaining:Correct Answer
+
+- [ ] depthField determines a field in the result document, which specifies the number of recursive lookups needed to reach that document
+
+- [ ] maxDepth allows you to specify the number of recursive lookups
+
+- [x] depthField determines a field, which contains value of the number of documents matched by the recursive lookup
+
+- [x] maxDepth only takes $long values
