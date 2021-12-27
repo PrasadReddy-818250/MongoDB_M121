@@ -769,3 +769,96 @@ db.air_alliances.aggregate([
   }
 ])
 ```
+
+# Chapter 4
+
+```
+# find one company document
+mongo startups --eval '
+db.companies.findOne()
+'
+
+# create text index
+mongo startups --eval '
+db.companies.createIndex({"description": "text", "overview": "text"})
+'
+
+# find companies matching term `networking` using text search
+mongo startups --eval '
+db.companies.aggregate([
+  {"$match": { "$text": {"$search": "network"}  }  }] )
+'
+
+# $sortByCount single query facet for the previous search
+mongo startups --eval '
+db.companies.aggregate([
+  {"$match": { "$text": {"$search": "network"}  }  },
+  {"$sortByCount": "$category_code"}] )
+'
+
+# extend the pipeline for a more elaborate facet
+mongo startups --eval '
+db.companies.aggregate([
+  {"$match": { "$text": {"$search": "network"}  }  } ,
+  {"$unwind": "$offices"},
+  {"$match": { "offices.city": {"$ne": ""}  }}   ,
+  {"$sortByCount": "$offices.city"}] )
+'
+```
+
+```
+#!/bin/sh
+
+# create manual buckets using $ bucket
+mongo startups --eval '
+db.companies.aggregate( [
+  { "$match": {"founded_year": {"$gt": 1980}, "number_of_employees": {"$ne": null}}  },
+  {"$bucket": {
+     "groupBy": "$number_of_employees",
+     "boundaries": [ 0, 20, 50, 100, 500, 1000, Infinity  ]}
+}] )
+'
+
+# reproduce error message for non matching documents
+mongo startups --eval '
+db.coll.insert({ x: "a" });
+db.coll.aggregate([{ $bucket: {groupBy: "$x", boundaries: [0, 50, 100]}}])
+'
+
+# set `default` option to collect documents that do not match boundaries
+mongo startups --eval '
+db.companies.aggregate( [
+  { "$match": {"founded_year": {"$gt": 1980}}},
+  { "$bucket": {
+    "groupBy": "$number_of_employees",
+    "boundaries": [ 0, 20, 50, 100, 500, 1000, Infinity  ],
+    "default": "Other" }
+}] )
+'
+
+# reproduce error message for inconsitent boundaries datatype
+mongo startups --eval '
+db.coll.aggregate([{ $bucket: {groupBy: "$x", boundaries: ["a", "b", 100]}}])
+'
+
+# set `output` option for $bucket stage
+mongo startups --eval '
+db.companies.aggregate([
+  { "$match":
+    {"founded_year": {"$gt": 1980}}
+  },
+  { "$bucket": {
+      "groupBy": "$number_of_employees",
+      "boundaries": [ 0, 20, 50, 100, 500, 1000, Infinity  ],
+      "default": "Other",
+      "output": {
+        "total": {"$sum":1},
+        "average": {"$avg": "$number_of_employees" },
+        "categories": {"$addToSet": "$category_code"}
+      }
+    }
+  }
+]
+)
+'
+```
