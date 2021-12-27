@@ -862,3 +862,69 @@ db.companies.aggregate([
 )
 '
 ```
+
+```
+#!/bin/sh
+
+# generate buckets automatically with $bucktAuto stage
+mongo startups --eval 'db.companies.aggregate([
+  { "$match": {"offices.city": "New York" }},
+  {"$bucketAuto": {
+    "groupBy": "$founded_year",
+    "buckets": 5
+}}])
+'
+
+# set `output` option for $bucketAuto
+mongo startups --eval 'db.companies.aggregate([
+  { "$match": {"offices.city": "New York" }},
+  {"$bucketAuto": {
+    "groupBy": "$founded_year",
+    "buckets": 5,
+    "output": {
+        "total": {"$sum":1},
+        "average": {"$avg": "$number_of_employees" }  }}}
+])
+'
+
+# default $buckeAuto behaviour
+mongo startups --eval '
+for(i=1; i <= 1000; i++) {  db.series.insert( {_id: i}  ) };
+db.series.aggregate(
+  {$bucketAuto:
+    {groupBy: "$_id", buckets: 5 }
+})
+'
+
+# generate automatic buckets using granularity numerical series R20
+mongo startups --eval 'db.series.aggregate(
+  {$bucketAuto:
+    {groupBy: "$_id", buckets: 5 , granularity: "R20"}
+  })
+'
+```
+#!/bin/sh
+
+# render several different facets using $facet stage
+mongo startups --eval 'db.companies.aggregate( [
+    {"$match": { "$text": {"$search": "Databases"} } },
+    { "$facet": {
+      "Categories": [{"$sortByCount": "$category_code"}],
+      "Employees": [
+        { "$match": {"founded_year": {"$gt": 1980}}},
+        {"$bucket": {
+          "groupBy": "$number_of_employees",
+          "boundaries": [ 0, 20, 50, 100, 500, 1000, Infinity  ],
+          "default": "Other"
+        }}],
+      "Founded": [
+        { "$match": {"offices.city": "New York" }},
+        {"$bucketAuto": {
+          "groupBy": "$founded_year",
+          "buckets": 5   }
+        }
+      ]
+  }}]).pretty()
+'
+```
+```
