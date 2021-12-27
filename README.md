@@ -987,3 +987,5 @@ db.movies.aggregate([
 ```
 
 Answer:1
+
+Reference Link: [$sortByCount](https://docs.mongodb.com/manual/reference/operator/aggregation/sortByCount/)
