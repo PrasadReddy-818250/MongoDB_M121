@@ -709,3 +709,63 @@ Attempts Remaining:Correct Answer
 - [x] depthField determines a field, which contains value of the number of documents matched by the recursive lookup
 
 - [x] maxDepth only takes $long values
+
+
+**Lab: $graphLookup**
+
+Determine the approach that satisfies the following question in the most efficient manner:
+
+Find the list of all possible distinct destinations, with at most one layover, departing from the base airports of airlines from Germany, Spain or Canada that are part of the "OneWorld" alliance. Include both the destination and which airline services that location. As a small hint, you should find 158 destinations.
+
+```
+db.air_alliances.aggregate([
+  {
+    $match: { name: "OneWorld" }
+  },
+  {
+    $graphLookup: {
+      startWith: "$airlines",
+      from: "air_airlines",
+      connectFromField: "name",
+      connectToField: "name",
+      as: "airlines",
+      maxDepth: 0,
+      restrictSearchWithMatch: {
+        country: { $in: ["Germany", "Spain", "Canada"] }
+      }
+    }
+  },
+  {
+    $graphLookup: {
+      startWith: "$airlines.base",
+      from: "air_routes",
+      connectFromField: "dst_airport",
+      connectToField: "src_airport",
+      as: "connections",
+      maxDepth: 1
+    }
+  },
+  {
+    $project: {
+      validAirlines: "$airlines.name",
+      "connections.dst_airport": 1,
+      "connections.airline.name": 1
+    }
+  },
+  { $unwind: "$connections" },
+  {
+    $project: {
+      isValid: {
+        $in: ["$connections.airline.name", "$validAirlines"]
+      },
+      "connections.dst_airport": 1
+    }
+  },
+  { $match: { isValid: true } },
+  {
+    $group: {
+      _id: "$connections.dst_airport"
+    }
+  }
+])
+```
