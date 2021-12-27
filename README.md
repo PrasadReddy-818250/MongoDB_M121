@@ -773,60 +773,50 @@ db.air_alliances.aggregate([
 # Chapter 4
 
 ```
-# find one company document
-mongo startups --eval '
+//find one company document
+
 db.companies.findOne()
-'
 
-# create text index
-mongo startups --eval '
+//create text index
 db.companies.createIndex({"description": "text", "overview": "text"})
-'
 
-# find companies matching term `networking` using text search
-mongo startups --eval '
+
+//find companies matching term `networking` using text search
 db.companies.aggregate([
   {"$match": { "$text": {"$search": "network"}  }  }] )
-'
 
-# $sortByCount single query facet for the previous search
-mongo startups --eval '
+
+//$sortByCount single query facet for the previous search
 db.companies.aggregate([
   {"$match": { "$text": {"$search": "network"}  }  },
   {"$sortByCount": "$category_code"}] )
-'
 
-# extend the pipeline for a more elaborate facet
-mongo startups --eval '
+
+//extend the pipeline for a more elaborate facet
+
 db.companies.aggregate([
   {"$match": { "$text": {"$search": "network"}  }  } ,
   {"$unwind": "$offices"},
   {"$match": { "offices.city": {"$ne": ""}  }}   ,
   {"$sortByCount": "$offices.city"}] )
-'
 ```
 
 ```
-#!/bin/sh
-
-# create manual buckets using $ bucket
-mongo startups --eval '
+//create manual buckets using $ bucket
 db.companies.aggregate( [
   { "$match": {"founded_year": {"$gt": 1980}, "number_of_employees": {"$ne": null}}  },
   {"$bucket": {
      "groupBy": "$number_of_employees",
      "boundaries": [ 0, 20, 50, 100, 500, 1000, Infinity  ]}
 }] )
-'
 
-# reproduce error message for non matching documents
-mongo startups --eval '
+
+//reproduce error message for non matching documents
 db.coll.insert({ x: "a" });
 db.coll.aggregate([{ $bucket: {groupBy: "$x", boundaries: [0, 50, 100]}}])
-'
 
-# set `default` option to collect documents that do not match boundaries
-mongo startups --eval '
+
+//set `default` option to collect documents that do not match boundaries
 db.companies.aggregate( [
   { "$match": {"founded_year": {"$gt": 1980}}},
   { "$bucket": {
@@ -834,15 +824,13 @@ db.companies.aggregate( [
     "boundaries": [ 0, 20, 50, 100, 500, 1000, Infinity  ],
     "default": "Other" }
 }] )
-'
 
-# reproduce error message for inconsitent boundaries datatype
-mongo startups --eval '
+
+//reproduce error message for inconsitent boundaries datatype
 db.coll.aggregate([{ $bucket: {groupBy: "$x", boundaries: ["a", "b", 100]}}])
-'
 
-# set `output` option for $bucket stage
-mongo startups --eval '
+
+//set `output` option for $bucket stage
 db.companies.aggregate([
   { "$match":
     {"founded_year": {"$gt": 1980}}
@@ -860,23 +848,20 @@ db.companies.aggregate([
   }
 ]
 )
-'
 ```
 
 ```
-#!/bin/sh
-
-# generate buckets automatically with $bucktAuto stage
-mongo startups --eval 'db.companies.aggregate([
+//generate buckets automatically with $bucktAuto stage
+db.companies.aggregate([
   { "$match": {"offices.city": "New York" }},
   {"$bucketAuto": {
     "groupBy": "$founded_year",
     "buckets": 5
 }}])
-'
 
-# set `output` option for $bucketAuto
-mongo startups --eval 'db.companies.aggregate([
+
+//set `output` option for $bucketAuto
+db.companies.aggregate([
   { "$match": {"offices.city": "New York" }},
   {"$bucketAuto": {
     "groupBy": "$founded_year",
@@ -885,10 +870,8 @@ mongo startups --eval 'db.companies.aggregate([
         "total": {"$sum":1},
         "average": {"$avg": "$number_of_employees" }  }}}
 ])
-'
 
-
-# default $buckeAuto behaviour
+default $buckeAuto behaviour
 
 ```
 for(i=1; i <= 1000; i++) {  db.series.insert( {_id: i}  ) };
@@ -908,10 +891,11 @@ db.series.aggregate(
 
 render several different facets using $facet stage
 
+
 **$facet**
 
 
-
+```
 db.companies.aggregate( [
     {"$match": { "$text": {"$search": "Databases"} } },
     { "$facet": {
@@ -931,5 +915,5 @@ db.companies.aggregate( [
         }
       ]
   }}]).pretty()
-
+```
 
