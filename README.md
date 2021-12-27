@@ -870,8 +870,9 @@ db.companies.aggregate([
         "total": {"$sum":1},
         "average": {"$avg": "$number_of_employees" }  }}}
 ])
+```
 
-default $buckeAuto behaviour
+**default $buckeAuto behaviour**
 
 ```
 for(i=1; i <= 1000; i++) {  db.series.insert( {_id: i}  ) };
