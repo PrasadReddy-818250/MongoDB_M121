@@ -603,6 +603,99 @@ db.movies.aggregate([
 Answer:
 { "_id" : "John Wayne", "numFilms" : 107, "average" : 6.424299065420561 }
 
+Reference link: [$lookup](https://docs.mongodb.com/manual/reference/operator/aggregation/lookup/)
+
+```
+// familiarizing with the air_alliances schema
+db.air_alliances.findOne()
+
+// familiarizing with the air_airlines schema
+db.air_airlines.findOne()
+
+// performing a lookup, joining air_alliances with air_airlines and replacing
+// the current airlines information with the new values
+db.air_alliances
+  .aggregate([
+    {
+      "$lookup": {
+        "from": "air_airlines",
+        "localField": "airlines",
+        "foreignField": "name",
+        "as": "airlines"
+      }
+    }
+  ])
+  .pretty()
+  ```
+
+**The $lookup Stage**
+Problem:
+
+Which of the following statements is true about the $lookup stage?
+Attempts Remaining:Correct Answer
+
+
+- [x] The collection specified in from cannot be sharded
+
+- [x] $lookup matches between localField and foreignField with an equality match
+
+- [ ] You can specify a collection in another database to from
+
+- [x] Specifying an existing field name to as will overwrite the the existing field
+
+
+**Lab - Using $lookup**
+Problem:
+
+Which alliance from air_alliances flies the most routes with either a Boeing 747 or an Airbus A380 (abbreviated 747 and 380 in air_routes)?
+
+```
+db.air_routes.aggregate([
+  {
+    $match: {
+      airplane: /747|380/
+    }
+  },
+  {
+    $lookup: {
+      from: "air_alliances",
+      foreignField: "airlines",
+      localField: "airline.name",
+      as: "alliance"
+    }
+  },
+  {
+    $unwind: "$alliance"
+  },
+  {
+    $group: {
+      _id: "$alliance.name",
+      count: { $sum: 1 }
+    }
+  },
+  {
+    $sort: { count: -1 }
+  }
+])
+```
+
+Answer: { "_id" : "SkyTeam", "count" : 16 }
+
+**$graphLookup: Simple Lookup**
+Problem:
+
+Which of the following statements is/are correct? Check all that apply.
+Attempts Remaining:Correct Answer
+
+- [x] connectToField will be used on recursive find operations
+
+- [ ] startWith indicates the index that should be use to execute the recursive match
+
+- [x] connectFromField value will be use to match connectToField in a recursive match
+
+- [ ] as determines a collection where $graphLookup will store the stage results
+
+
 **$graphLookup: maxDepth and depthField**
 Problem:
 
