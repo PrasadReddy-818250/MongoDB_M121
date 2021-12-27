@@ -887,26 +887,32 @@ mongo startups --eval 'db.companies.aggregate([
 ])
 '
 
+
 # default $buckeAuto behaviour
-mongo startups --eval '
+
+```
 for(i=1; i <= 1000; i++) {  db.series.insert( {_id: i}  ) };
 db.series.aggregate(
   {$bucketAuto:
     {groupBy: "$_id", buckets: 5 }
 })
-'
 
-# generate automatic buckets using granularity numerical series R20
-mongo startups --eval 'db.series.aggregate(
+//generate automatic buckets using granularity numerical series R20
+
+db.series.aggregate(
   {$bucketAuto:
     {groupBy: "$_id", buckets: 5 , granularity: "R20"}
   })
-'
 ```
-#!/bin/sh
 
-# render several different facets using $facet stage
-mongo startups --eval 'db.companies.aggregate( [
+
+render several different facets using $facet stage
+
+**$facet**
+
+
+
+db.companies.aggregate( [
     {"$match": { "$text": {"$search": "Databases"} } },
     { "$facet": {
       "Categories": [{"$sortByCount": "$category_code"}],
@@ -925,6 +931,5 @@ mongo startups --eval 'db.companies.aggregate( [
         }
       ]
   }}]).pretty()
-'
-```
-```
+
+
